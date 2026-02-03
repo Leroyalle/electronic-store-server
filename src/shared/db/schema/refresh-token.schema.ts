@@ -8,7 +8,7 @@ export const refreshTokenSchema = pgTable('refreshTokens', {
   jwi: varchar().notNull(),
   token: varchar().notNull(),
   expAt: date().notNull(),
-
+  revokedAt: date(),
   userId: uuid()
     .notNull()
     .references(() => userSchema.id, { onDelete: 'cascade' }),

@@ -52,6 +52,7 @@ export class AuthCommands {
       userId: createdUser.id,
       jwi: refreshToken.jwi,
       expAt: refreshToken.expAt,
+      revokedAt: null,
     });
 
     return { status: 'success', accessToken: accessToken.token, refreshToken: refreshToken.token };
