@@ -9,7 +9,7 @@ export type UserCommandsDeps = {
 export class UserCommands {
   constructor(private deps: UserCommandsDeps) {}
 
-  public create(user: User) {
-    return this.deps.userRepo.create(user);
+  public async create(user: Omit<User, 'id'>) {
+    return await this.deps.userRepo.create(user);
   }
 }

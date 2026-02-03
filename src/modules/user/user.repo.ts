@@ -7,7 +7,7 @@ import { User, userSchema } from '../../shared/db/schema/user.schema';
 export interface IUserRepository {
   findById(id: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
-  create(user: User): Promise<User>;
+  create(user: Omit<User, 'id'>): Promise<User>;
 }
 
 export class UserRepo implements IUserRepository {
@@ -19,7 +19,7 @@ export class UserRepo implements IUserRepository {
     return (await db.select().from(userSchema).where(eq(userSchema.email, email)))[0];
   }
 
-  public async create(user: User): Promise<User> {
+  public async create(user: Omit<User, 'id'>): Promise<User> {
     return (await db.insert(userSchema).values(user).returning())[0];
   }
 }
