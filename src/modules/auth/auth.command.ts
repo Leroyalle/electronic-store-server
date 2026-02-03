@@ -5,7 +5,7 @@ import { User } from '@/shared/db/schema/user.schema';
 import { UserCommands } from '../user/user.commands';
 import { UserQueries } from '../user/user.queries';
 
-import { TokenRepo } from './token.repo';
+import { TokenCommands } from './token.commands';
 import { TokenService } from './token.service';
 
 type RegisterResult = SuccessRegisterResult | ErrorAuthResult;
@@ -29,7 +29,7 @@ export interface AuthCommandsDeps {
   userQueries: UserQueries;
   userCommands: UserCommands;
   tokenService: TokenService;
-  tokenRepo: TokenRepo;
+  tokenCommands: TokenCommands;
 }
 
 export class AuthCommands {
@@ -47,7 +47,7 @@ export class AuthCommands {
     const accessToken = await this.deps.tokenService.sign(createdUser, 'access');
     const refreshToken = await this.deps.tokenService.sign(createdUser, 'refresh');
 
-    await this.deps.tokenRepo.create({
+    await this.deps.tokenCommands.create({
       token: refreshToken.token,
       userId: createdUser.id,
       jwi: refreshToken.jwi,
