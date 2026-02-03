@@ -1,9 +1,14 @@
-import { Hono } from 'hono'
+import { Hono } from 'hono';
 
-const app = new Hono()
+import { createUserModule } from './modules/user/user.module';
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+const app = new Hono();
 
-export default app
+const userModule = createUserModule();
+app.route('/user', userModule.router);
+
+app.get('/', c => {
+  return c.text('Hello Hono!');
+});
+
+export default app;

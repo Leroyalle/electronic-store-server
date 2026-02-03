@@ -1,0 +1,25 @@
+import { eq } from 'drizzle-orm';
+
+import { db } from '@/shared/db/client';
+
+import { User, userSchema } from '../../shared/db/schema/user.schema';
+
+export interface IUserRepository {
+  findById(id: string): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>;
+  create(user: User): Promise<User>;
+}
+
+export class UserRepo implements IUserRepository {
+  public async findById(id: string): Promise<User | null> {
+    return (await db.select().from(userSchema).where(eq(userSchema.id, id)))[0];
+  }
+
+  public async findByEmail(email: string): Promise<User | null> {
+    return (await db.select().from(userSchema).where(eq(userSchema.email, email)))[0];
+  }
+
+  public async create(user: User): Promise<User> {
+    return (await db.insert(userSchema).values(user).returning())[0];
+  }
+}
