@@ -1,12 +1,15 @@
 import { Cart } from '@/shared/db/schema/cart.schema';
 import { Product } from '@/shared/db/schema/product.schema';
 
+import { ProductQueries } from '../product/product.queries';
+
 import { CartItemCommands } from './cart-item/cart-item.commands';
 import { ICartRepository } from './cart.repo';
 
 interface Deps {
   cartRepo: ICartRepository;
   cartItemCommands: CartItemCommands;
+  productQueries: ProductQueries;
 }
 
 export class CardCommands {
@@ -31,14 +34,20 @@ export class CardCommands {
     return cart;
   }
 
-  public async addItem(userId: string, product: Product) {
+  public async addItem(userId: string, productId: string) {
     const cart = await this.findOrCreateCart(userId);
 
     if (!cart) {
       throw new Error('Не удалось создать или найти корзину');
     }
 
-    const findItem = cart.cartItems.find(item => item.productId === product.id);
+    const product = await this.deps.productQueries.findById(productId);
+
+    if (!product) {
+      throw new Error('Такого товара нет');
+    }
+
+    const findItem = cart.cartItems.find(item => item.productId === productId);
 
     if (findItem) {
       await this.deps.cartItemCommands.update(findItem.id, { quantity: findItem.quantity + 1 });
@@ -46,7 +55,7 @@ export class CardCommands {
 
     await this.deps.cartItemCommands.create({
       cartId: cart.id,
-      productId: product.id,
+      productId,
       quantity: 1,
     });
 
