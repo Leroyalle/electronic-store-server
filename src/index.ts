@@ -10,6 +10,11 @@ import { accessAuthMiddleware } from './shared/middlewares/access-auth.middlewar
 
 const app = new Hono();
 
+app.onError((err, c) => {
+  return c.json({ message: err.message }, 404);
+  // return c.json({ message: 'Internal server error' }, 500);
+});
+
 const userModule = createUserModule();
 const authModule = createAuthModule({
   userCommands: userModule.commands,
