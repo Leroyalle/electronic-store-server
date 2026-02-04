@@ -2,6 +2,8 @@ import { Hono } from 'hono';
 
 import { createAuthModule } from './modules/auth/auth.module';
 import { createAuthRouter } from './modules/auth/auth.router';
+import { createCartModule } from './modules/cart/cart.module';
+import { createCartRouter } from './modules/cart/cart.router';
 import { createProductModule } from './modules/product/product.module';
 import { createProductRouter } from './modules/product/product.router';
 import { createUserModule } from './modules/user/user.module';
@@ -20,6 +22,7 @@ const authModule = createAuthModule({
   userQueries: userModule.queries,
 });
 const productModule = createProductModule();
+const cartModule = createCartModule({ productQueries: productModule.queries });
 
 const requiredAccess = accessAuthMiddleware(authModule.commands.verifyToken);
 
@@ -28,17 +31,21 @@ const userRouter = createUserRouter({
   queries: userModule.queries,
   accessAuthMiddleware: requiredAccess,
 });
-
+const authRouter = createAuthRouter({ commands: authModule.commands });
 const productRouter = createProductRouter({
   commands: productModule.commands,
   queries: productModule.queries,
 });
-
-const authRouter = createAuthRouter({ commands: authModule.commands });
+const cartRouter = createCartRouter({
+  commands: cartModule.commands,
+  queries: cartModule.queries,
+  accessAuthMiddleware: requiredAccess,
+});
 
 app.route('/user', userRouter);
 app.route('/auth', authRouter);
 app.route('/product', productRouter);
+app.route('/cart', cartRouter);
 
 app.get('/', c => {
   return c.text('Hello Hono!');
