@@ -1,7 +1,7 @@
 import { InferSelectModel, relations } from 'drizzle-orm';
 import { integer, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 
-import { RefreshToken, refreshTokenSchema } from './refresh-token.schema';
+import { refreshTokenSchema } from './refresh-token.schema';
 
 export const roles = ['user', 'admin'] as const;
 export const roleEnum = pgEnum('role', roles);
