@@ -16,8 +16,4 @@ export class CardCommands {
   public update(cart: Partial<Omit<Cart, 'id'>>) {
     return this.deps.cartRepo.update(cart);
   }
-
-  public findById(id: string) {
-    return this.deps.cartRepo.findById(id);
-  }
 }
