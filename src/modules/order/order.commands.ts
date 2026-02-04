@@ -1,6 +1,5 @@
 import { Order } from '@/shared/db/schema/order.schema';
 
-import { CartCommands } from '../cart/cart.commands';
 import { CartQueries } from '../cart/cart.queries';
 
 import { IOrderRepository } from './order.repo';

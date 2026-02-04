@@ -1,6 +1,5 @@
 import { CreateModuleResult } from '@/shared/types/create-module.result.type';
 
-import { CartCommands } from '../cart/cart.commands';
 import { CartQueries } from '../cart/cart.queries';
 
 import { OrderCommands } from './order.commands';

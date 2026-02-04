@@ -48,8 +48,4 @@ app.route('/product', productRouter);
 app.route('/cart', cartRouter);
 app.route('/order', orderRouter);
 
-app.get('/', c => {
-  return c.text('Hello Hono!');
-});
-
 export default app;
