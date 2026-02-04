@@ -5,12 +5,15 @@ import { User } from '@/shared/db/schema/user.schema';
 
 import { AuthCommands } from './auth.command';
 
-export function createAuthRouter(commands: AuthCommands): Hono {
+interface Deps {
+  commands: AuthCommands;
+}
+export function createAuthRouter(deps: Deps): Hono {
   const authRouter = new Hono();
 
   authRouter.post('/register', async c => {
     const body = await c.req.json<Omit<User, 'id'>>();
-    const result = await commands.register(body);
+    const result = await deps.commands.register(body);
     if (result.status === 'error') return c.json(result, 400);
     setCookie(c, 'refreshToken', result.refreshToken, {
       httpOnly: true,
@@ -24,7 +27,7 @@ export function createAuthRouter(commands: AuthCommands): Hono {
 
   authRouter.post('/login', async c => {
     const body = await c.req.json<Pick<User, 'email' | 'password'>>();
-    const result = await commands.login(body);
+    const result = await deps.commands.login(body);
     if (result.status === 'error') return c.json(result, 400);
     return c.json({ message: 'Авторизация прошла успешно!', accessToken: result.accessToken }, 201);
   });
