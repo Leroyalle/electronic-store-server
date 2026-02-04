@@ -1,8 +1,17 @@
 import { InferSelectModel, relations } from 'drizzle-orm';
-import { integer, jsonb, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { customType, integer, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { CartItem } from './cart-item.schema';
 import { userSchema } from './user.schema';
+
+const jsonbConfig = customType<{ data: CartItem[] }>({
+  dataType() {
+    return 'jsonb';
+  },
+  toDriver(value: CartItem[]) {
+    return JSON.stringify(value);
+  },
+});
 
 export const orderSchema = pgTable('orders', {
   id: uuid().defaultRandom().primaryKey(),
@@ -12,7 +21,7 @@ export const orderSchema = pgTable('orders', {
 
   phone: integer().notNull(),
   totalAmount: integer().notNull(),
-  items: jsonb().$type<CartItem>().notNull(),
+  items: jsonbConfig().$type<CartItem>().notNull(),
 
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
