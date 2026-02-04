@@ -1,7 +1,7 @@
 import { InferSelectModel, relations } from 'drizzle-orm';
 import { pgTable, uuid } from 'drizzle-orm/pg-core';
 
-import { cartItemSchema } from './cart-item.schema';
+import { CartItem, cartItemSchema } from './cart-item.schema';
 import { userSchema } from './user.schema';
 
 export const cartSchema = pgTable('carts', {
@@ -21,3 +21,4 @@ export const cartRelation = relations(cartSchema, ({ one, many }) => ({
 }));
 
 export type Cart = InferSelectModel<typeof cartSchema>;
+export type CartWithRelations = Cart & { cartItems: CartItem[] };

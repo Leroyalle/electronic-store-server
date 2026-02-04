@@ -1,5 +1,5 @@
 import { InferSelectModel, relations } from 'drizzle-orm';
-import { pgTable, uuid } from 'drizzle-orm/pg-core';
+import { integer, pgTable, uuid } from 'drizzle-orm/pg-core';
 
 import { cartSchema } from './cart.schema';
 import { productSchema } from './product.schema';
@@ -12,6 +12,7 @@ export const cartItemSchema = pgTable('cartItems', {
   cartId: uuid()
     .notNull()
     .references(() => cartSchema.id, { onDelete: 'cascade' }),
+  quantity: integer().notNull(),
 });
 
 export const cartItemRelations = relations(cartItemSchema, ({ one }) => ({

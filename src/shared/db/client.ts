@@ -1,3 +1,17 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 
-export const db = drizzle(process.env.DATABASE_URL!);
+import { cartItemSchema } from './schema/cart-item.schema';
+import { cartSchema } from './schema/cart.schema';
+import { productSchema } from './schema/product.schema';
+import { refreshTokenSchema } from './schema/refresh-token.schema';
+import { userSchema } from './schema/user.schema';
+
+export const db = drizzle(process.env.DATABASE_URL!, {
+  schema: {
+    cartSchema,
+    cartItemSchema,
+    productSchema,
+    userSchema,
+    refreshTokenSchema,
+  },
+});
