@@ -1,16 +1,12 @@
 import { Hono } from 'hono';
 
-import { createAuthModule } from './modules/auth/auth.module';
+import { createMiddlewares } from './middlewares';
+import { createModules } from './modules';
 import { createAuthRouter } from './modules/auth/auth.router';
-import { createCartModule } from './modules/cart/cart.module';
 import { createCartRouter } from './modules/cart/cart.router';
-import { createOrderModule } from './modules/order/order.module';
 import { createOrderRouter } from './modules/order/order.router';
-import { createProductModule } from './modules/product/product.module';
 import { createProductRouter } from './modules/product/product.router';
-import { createUserModule } from './modules/user/user.module';
 import { createUserRouter } from './modules/user/user.router';
-import { accessAuthMiddleware } from './shared/middlewares/access-auth.middleware';
 
 const app = new Hono();
 
@@ -18,38 +14,32 @@ app.onError((err, c) => {
   return c.json({ message: err.message }, 404);
 });
 
-const userModule = createUserModule();
-const authModule = createAuthModule({
-  userCommands: userModule.commands,
-  userQueries: userModule.queries,
-});
-const productModule = createProductModule();
-const cartModule = createCartModule({ productQueries: productModule.queries });
-const orderModule = createOrderModule({
-  cartQueries: cartModule.queries,
-});
-
-const requiredAccess = accessAuthMiddleware(authModule.commands.verifyToken);
+const { auth, cart, order, product, user } = createModules();
+const { accessAuth } = createMiddlewares({ verifyToken: auth.commands.verifyToken });
 
 const userRouter = createUserRouter({
-  commands: userModule.commands,
-  queries: userModule.queries,
-  accessAuthMiddleware: requiredAccess,
+  commands: user.commands,
+  queries: user.queries,
+  accessAuthMiddleware: accessAuth,
 });
-const authRouter = createAuthRouter({ commands: authModule.commands });
+
+const authRouter = createAuthRouter({ commands: auth.commands });
+
 const productRouter = createProductRouter({
-  commands: productModule.commands,
-  queries: productModule.queries,
+  commands: product.commands,
+  queries: product.queries,
 });
+
 const cartRouter = createCartRouter({
-  commands: cartModule.commands,
-  queries: cartModule.queries,
-  accessAuthMiddleware: requiredAccess,
+  commands: cart.commands,
+  queries: cart.queries,
+  accessAuthMiddleware: accessAuth,
 });
+
 const orderRouter = createOrderRouter({
-  queries: orderModule.queries,
-  commands: orderModule.commands,
-  accessAuthMiddleware: requiredAccess,
+  queries: order.queries,
+  commands: order.commands,
+  accessAuthMiddleware: accessAuth,
 });
 
 app.route('/user', userRouter);
