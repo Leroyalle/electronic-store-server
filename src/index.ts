@@ -11,7 +11,19 @@ import { createUserRouter } from './modules/user/user.router';
 const app = new Hono();
 
 app.onError((err, c) => {
-  return c.json({ message: err.message }, 404);
+  console.error('ERROR MESSAGE:', err.message);
+  console.error('ERROR STACK:', err.stack);
+
+  if (err.cause) {
+    console.error('ERROR CAUSE:', err.cause);
+  }
+
+  return c.json(
+    {
+      message: err.message,
+    },
+    500,
+  );
 });
 
 const { auth, cart, order, product, user } = createModules();

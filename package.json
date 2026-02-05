@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "drizzle:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@saintleroyalle/core": "^1.0.2",
