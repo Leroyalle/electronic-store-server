@@ -11,8 +11,9 @@ interface Deps {
 export function createProductRouter(deps: Deps): Hono {
   const productRouter = new Hono();
 
-  productRouter.get('/', c => {
-    const data = deps.queries.findAll();
+  productRouter.get('/', async c => {
+    const data = await deps.queries.findAll();
+    console.log(data);
     return c.json(data);
   });
 

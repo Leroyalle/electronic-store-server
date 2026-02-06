@@ -15,7 +15,7 @@ export class ProductRepo implements IProductRepository {
   }
 
   public async findAll(): Promise<Product[]> {
-    return await db.select().from(productSchema);
+    return await db.query.productSchema.findMany();
   }
 
   public async findById(id: string): Promise<Product> {
