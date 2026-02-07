@@ -1,12 +1,16 @@
 import { createAuthModule } from './modules/auth/auth.module';
 import { createCartModule } from './modules/cart/cart.module';
+import { createDataCounterModule } from './modules/data-counter/data-counter.module';
 import { createOrderModule } from './modules/order/order.module';
 import { createProductModule } from './modules/product/product.module';
 import { createTelegramModule } from './modules/telegram/telegram.module';
 import { createUserModule } from './modules/user/user.module';
+import { db } from './shared/infrastructure/db/client';
 
 export function createModules() {
   const telegram = createTelegramModule();
+
+  const dataCounter = createDataCounterModule({ db });
 
   const user = createUserModule();
 
