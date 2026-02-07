@@ -21,3 +21,5 @@ export const db = drizzle(getEnv('DATABASE_URL'), {
     ...dataCounterSchema,
   },
 });
+
+export type DB = typeof db;
