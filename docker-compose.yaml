@@ -1,18 +1,26 @@
 services:
+  backend:
+    build: .
+    container_name: electronic_api
+    depends_on:
+      - postgres
+      - redis
+      - meilisearch
+
   meilisearch:
     image: getmeili/meilisearch:latest
     container_name: electronic-meilisearch
     ports:
       - 7700:7700
     environment:
-      MEILI_MASTER_KEY: 'masterkey'
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
     volumes:
       - meili_data:/meili_data
 
   redis:
     image: 'redis:latest'
     container_name: 'electronic-redis'
-    command: redis-server --user backend on >password123 ~* +@all
+    command: redis-server --user ${REDIS_USER} on >${REDIS_PASSWORD} ~* +@all
     ports:
       - 6777:6379
     volumes:
@@ -24,13 +32,13 @@ services:
     ports:
       - '5888:5432'
     environment:
-      POSTGRES_USER: backend
-      POSTGRES_PASSWORD: '123123'
-      POSTGRES_DB: electronic_shop
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - pg_data:/var/lib/postgresql/data
 
 volumes:
-  - meili_data:
-  - redis_data:
-  - pg_data:
+  meili_data:
+  redis_data:
+  pg_data:
