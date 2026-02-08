@@ -8,8 +8,6 @@ import { createCartRouter } from './modules/cart/cart.router';
 import { createOrderRouter } from './modules/order/order.router';
 import { createProductRouter } from './modules/product/product.router';
 import { createUserRouter } from './modules/user/user.router';
-import { Product } from './shared/infrastructure/db/schema/product.schema';
-import { meilisearchClient } from './shared/infrastructure/meilisearch/client';
 
 const app = new Hono().basePath('/api');
 
@@ -41,7 +39,7 @@ app.onError((err, c) => {
   );
 });
 
-const { auth, cart, order, product, user } = createModules();
+const { auth, cart, order, product, user, meilisearch } = createModules();
 const { accessGuard, refreshGuard } = createMiddlewares({ authCommands: auth.commands });
 
 const userRouter = createUserRouter({
@@ -55,7 +53,7 @@ const authRouter = createAuthRouter({ commands: auth.commands, refreshGuard });
 const productRouter = createProductRouter({
   commands: product.commands,
   queries: product.queries,
-  searchIndex: meilisearchClient.index<Pick<Product, 'id' | 'name' | 'price'>>('products'),
+  searchIndex: meilisearch.indexes.productIndex,
 });
 
 const cartRouter = createCartRouter({

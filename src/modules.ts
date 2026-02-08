@@ -1,16 +1,17 @@
 import { createAuthModule } from './modules/auth/auth.module';
 import { createCartModule } from './modules/cart/cart.module';
 import { createDataCounterModule } from './modules/data-counter/data-counter.module';
+import { createMeilisearchModule } from './modules/meilisearch/meilisearch.module';
 import { createOrderModule } from './modules/order/order.module';
 import { createProductModule } from './modules/product/product.module';
 import { createTelegramModule } from './modules/telegram/telegram.module';
 import { createUserModule } from './modules/user/user.module';
 import { db } from './shared/infrastructure/db/client';
-import { Product } from './shared/infrastructure/db/schema/product.schema';
-import { meilisearchClient } from './shared/infrastructure/meilisearch/client';
 import { redis } from './shared/infrastructure/redis/client';
 
 export function createModules() {
+  const meilisearch = createMeilisearchModule();
+
   const telegram = createTelegramModule();
 
   const dataCounter = createDataCounterModule({ db: db });
@@ -24,7 +25,7 @@ export function createModules() {
   const product = createProductModule({
     dataCounterQueries: dataCounter.queries,
     redis: redis,
-    searchIndex: meilisearchClient.index<Pick<Product, 'id' | 'name' | 'price'>>('products'),
+    searchIndex: meilisearch.indexes.productIndex,
   });
 
   const cart = createCartModule({ productQueries: product.queries });
@@ -43,5 +44,6 @@ export function createModules() {
     order,
     telegram,
     dataCounter,
+    meilisearch,
   };
 }

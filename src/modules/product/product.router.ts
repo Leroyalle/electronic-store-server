@@ -9,7 +9,6 @@ import { paramsZodSchema } from '@/shared/infrastructure/zod/params.schema';
 import { ProductCommands } from './product.commands';
 import { IProductQueries } from './product.queries';
 import { createProductZodSchema } from './schemas/create-product.schema';
-import { searchProductZodSchema } from './schemas/search.schema';
 
 interface Deps {
   commands: ProductCommands;
@@ -25,12 +24,6 @@ export function createProductRouter(deps: Deps): Hono {
     const data = await deps.queries.findAll(query);
     return c.json(data);
   });
-
-  // productRouter.get('/search', zValidator('query', searchProductZodSchema), async c => {
-  //   const query = c.req.valid('query');
-  //   const data = await deps.queries.findAll(query);
-  //   return c.json(data);
-  // });
 
   // TODO: гвард на авторизацию админа
   productRouter.post('/', zValidator('json', createProductZodSchema), async c => {
