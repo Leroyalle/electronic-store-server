@@ -28,7 +28,7 @@ export function createProductRouter(deps: Deps): Hono {
   });
 
   productRouter.get('/:id', zValidator('param', paramsZodSchema), c => {
-    const id = c.req.param('id');
+    const id = c.req.valid('param');
     const data = deps.queries.findById(id);
     return c.json(data);
   });
