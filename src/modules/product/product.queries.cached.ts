@@ -27,10 +27,10 @@ export class ProductQueriesCached implements IProductQueries {
       return { total: count, items: products };
     }
 
-    const products = await this.deps.productQueries.findAll(pagination);
+    const data = await this.deps.productQueries.findAll(pagination);
 
-    await this.deps.redis.set(redisKey, JSON.stringify(products), 'EX', 60);
-    return products;
+    await this.deps.redis.set(redisKey, JSON.stringify(data.items), 'EX', 60);
+    return data;
   }
 
   public async findById(id: string): Promise<Product> {
