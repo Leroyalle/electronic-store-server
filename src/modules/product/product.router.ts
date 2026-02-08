@@ -1,7 +1,11 @@
+import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
+
+import { paramsZodSchema } from '@/shared/infrastructure/zod/params.schema';
 
 import { ProductCommands } from './product.commands';
 import { IProductQueries } from './product.queries';
+import { createProductZodSchema } from './schemas/create-product.schema';
 
 interface Deps {
   commands: ProductCommands;
@@ -17,13 +21,13 @@ export function createProductRouter(deps: Deps): Hono {
   });
 
   // TODO: гвард на авторизацию админа
-  productRouter.post('/', async c => {
-    const body = await c.req.json<{ name: string; price: number }>();
+  productRouter.post('/', zValidator('json', createProductZodSchema), async c => {
+    const body = c.req.valid('json');
     const data = await deps.commands.create(body);
     return c.json(data, 201);
   });
 
-  productRouter.get('/:id', c => {
+  productRouter.get('/:id', zValidator('param', paramsZodSchema), c => {
     const id = c.req.param('id');
     const data = deps.queries.findById(id);
     return c.json(data);

@@ -3,10 +3,11 @@ import { Hono, MiddlewareHandler } from 'hono';
 
 import { AuthVars } from '@/shared/types/auth-variables.type';
 
+import { paramsZodSchema } from '../../shared/infrastructure/zod/params.schema';
+
 import { CartCommands } from './cart.commands';
 import { CartQueries } from './cart.queries';
 import { addItemZodSchema } from './schemas/add-item.schema';
-import { paramsZodSchema } from './schemas/params.schema';
 
 interface Deps {
   commands: CartCommands;
