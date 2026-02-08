@@ -6,6 +6,8 @@ import { createProductModule } from './modules/product/product.module';
 import { createTelegramModule } from './modules/telegram/telegram.module';
 import { createUserModule } from './modules/user/user.module';
 import { db } from './shared/infrastructure/db/client';
+import { Product } from './shared/infrastructure/db/schema/product.schema';
+import { meilisearchClient } from './shared/infrastructure/meilisearch/client';
 import { redis } from './shared/infrastructure/redis/client';
 
 export function createModules() {
@@ -19,7 +21,11 @@ export function createModules() {
     userCommands: user.commands,
     userQueries: user.queries,
   });
-  const product = createProductModule({ dataCounterQueries: dataCounter.queries, redis: redis });
+  const product = createProductModule({
+    dataCounterQueries: dataCounter.queries,
+    redis: redis,
+    searchIndex: meilisearchClient.index<Pick<Product, 'id' | 'name' | 'price'>>('products'),
+  });
 
   const cart = createCartModule({ productQueries: product.queries });
 
