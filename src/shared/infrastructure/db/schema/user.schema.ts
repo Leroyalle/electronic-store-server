@@ -1,5 +1,5 @@
 import { InferSelectModel, relations } from 'drizzle-orm';
-import { pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { boolean, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 
 import { authCodeSchema } from './auth-code.schema';
 import { cartSchema } from './cart.schema';
@@ -14,6 +14,7 @@ export const userSchema = pgTable('users', {
   name: text().notNull(),
   email: text().notNull().unique(),
   password: text().notNull(),
+  isVerified: boolean().notNull().default(false),
   role: roleEnum().notNull(),
   ...pgTimestamp,
 });
