@@ -1,0 +1,36 @@
+services:
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: electronic-meilisearch
+    ports:
+      - 7700:7700
+    environment:
+      MEILI_MASTER_KEY: 'masterkey'
+    volumes:
+      - meili_data:/meili_data
+
+  redis:
+    image: 'redis:latest'
+    container_name: 'electronic-redis'
+    command: redis-server --user backend on >password123 ~* +@all
+    ports:
+      - 6777:6379
+    volumes:
+      - redis_data:/data
+
+  postgres:
+    image: postgres:latest
+    container_name: electronic-db
+    ports:
+      - '5888:5432'
+    environment:
+      POSTGRES_USER: backend
+      POSTGRES_PASSWORD: '123123'
+      POSTGRES_DB: electronic_shop
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  - meili_data:
+  - redis_data:
+  - pg_data:
