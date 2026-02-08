@@ -1,11 +1,11 @@
 import { ConnectionOptions, Queue, QueueOptions } from 'bullmq';
 
-export function createQueue(
+export function createQueue<T = any>(
   queueName: string,
   connection: ConnectionOptions,
   opts?: Omit<QueueOptions, 'connection'>,
 ) {
-  const queue = new Queue(queueName, {
+  return new Queue<T>(queueName, {
     connection,
     ...opts,
     defaultJobOptions: {
