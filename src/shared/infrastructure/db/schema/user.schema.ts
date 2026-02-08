@@ -13,7 +13,6 @@ export const userSchema = pgTable('users', {
   name: text().notNull(),
   email: text().notNull().unique(),
   password: text().notNull(),
-  phone: integer().notNull(),
   role: roleEnum().notNull(),
   ...pgTimestamp,
 });

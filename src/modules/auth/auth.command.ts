@@ -35,7 +35,9 @@ export interface AuthCommandsDeps {
 export class AuthCommands {
   constructor(private readonly deps: AuthCommandsDeps) {}
 
-  public async register(input: Omit<User, 'id'>): Promise<RegisterResult> {
+  public async register(
+    input: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'role'>,
+  ): Promise<RegisterResult> {
     const findUser = await this.deps.userQueries.findByEmail(input.email);
     if (findUser) return { status: 'error', message: 'Пользователь с данным email уже существует' };
 
