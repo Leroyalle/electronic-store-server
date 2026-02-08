@@ -1,9 +1,12 @@
+import { zValidator } from '@hono/zod-validator';
 import { Hono, MiddlewareHandler } from 'hono';
 
 import { AuthVars } from '@/shared/types/auth-variables.type';
 
 import { CartCommands } from './cart.commands';
 import { CartQueries } from './cart.queries';
+import { addItemZodSchema } from './schemas/add-item.schema';
+import { paramsZodSchema } from './schemas/params.schema';
 
 interface Deps {
   commands: CartCommands;
@@ -20,26 +23,41 @@ export function createCartRouter(deps: Deps): Hono {
     return c.json(data);
   });
 
-  router.post('/items', deps.accessAuthMiddleware, async c => {
-    const userId = c.get('userId');
-    const body = await c.req.json<{ productId: string }>();
-    const data = await deps.commands.addItem(userId, body.productId);
-    return c.json(data);
-  });
+  router.post(
+    '/items',
+    deps.accessAuthMiddleware,
+    zValidator('json', addItemZodSchema),
+    async c => {
+      const userId = c.get('userId');
+      const body = c.req.valid('json');
+      const data = await deps.commands.addItem(userId, body.productId);
+      return c.json(data);
+    },
+  );
 
-  router.delete('/items/:id', deps.accessAuthMiddleware, async c => {
-    const userId = c.get('userId');
-    const cartItemId = c.req.param('id');
-    const data = await deps.commands.removeItem(userId, cartItemId);
-    return c.json(data);
-  });
+  router.delete(
+    '/items/:id',
+    deps.accessAuthMiddleware,
+    zValidator('param', paramsZodSchema),
+    async c => {
+      const userId = c.get('userId');
+      const cartItemId = c.req.param('id');
+      const data = await deps.commands.removeItem(userId, cartItemId);
+      return c.json(data);
+    },
+  );
 
-  router.put('/items/:id', deps.accessAuthMiddleware, async c => {
-    const userId = c.get('userId');
-    const cartItemId = c.req.param('id');
-    const data = await deps.commands.decrementItem(userId, cartItemId);
-    return c.json(data);
-  });
+  router.put(
+    '/items/:id',
+    deps.accessAuthMiddleware,
+    zValidator('param', paramsZodSchema),
+    async c => {
+      const userId = c.get('userId');
+      const cartItemId = c.req.param('id');
+      const data = await deps.commands.decrementItem(userId, cartItemId);
+      return c.json(data);
+    },
+  );
 
   router.delete('/', deps.accessAuthMiddleware, async c => {
     const userId = c.get('userId');

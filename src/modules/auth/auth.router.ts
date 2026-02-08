@@ -2,7 +2,6 @@ import { zValidator } from '@hono/zod-validator';
 import { Hono, MiddlewareHandler } from 'hono';
 import { setCookie } from 'hono/cookie';
 
-import { User } from '@/shared/infrastructure/db/schema/user.schema';
 import { RefreshAuthVars } from '@/shared/types/auth-variables.type';
 
 import { AuthCommands } from './auth.command';
@@ -19,7 +18,7 @@ export function createAuthRouter(deps: Deps): Hono {
   const authRouter = new Hono();
 
   authRouter.post('/register', zValidator('json', registerZodSchema), async c => {
-    const body = await c.req.valid('json');
+    const body = c.req.valid('json');
     const result = await deps.commands.register(body);
     if (result.status === 'error') return c.json(result, 400);
     setCookie(c, 'refreshToken', result.refreshToken, {
@@ -33,7 +32,7 @@ export function createAuthRouter(deps: Deps): Hono {
   });
 
   authRouter.post('/login', zValidator('json', loginZodSchema), async c => {
-    const body = await c.req.valid('json');
+    const body = c.req.valid('json');
     const result = await deps.commands.login(body);
     if (result.status === 'error') return c.json(result, 400);
     return c.json({ message: 'Авторизация прошла успешно!', accessToken: result.accessToken }, 201);
