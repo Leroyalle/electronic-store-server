@@ -1,4 +1,5 @@
 import Redis from 'ioredis';
+import { Index } from 'meilisearch';
 
 import { RedisKeyPrefix } from '@/shared/constants/redis-key-prefix.constants';
 import { Product } from '@/shared/infrastructure/db/schema/product.schema';
@@ -12,12 +13,22 @@ interface Deps {
   redis: Redis;
   productQueries: IProductQueries;
   getCount: (tableName: string) => Promise<number>;
+  searchIndex: Index<Pick<Product, 'id' | 'name' | 'price'>>;
 }
 
 export class ProductQueriesCached implements IProductQueries {
   constructor(private readonly deps: Deps) {}
 
-  public async findAll(pagination: IPagination): Promise<IPaginationResult<Product>> {
+  public async findAll(
+    pagination: IPagination,
+  ): Promise<IPaginationResult<Pick<Product, 'id' | 'name' | 'price'>>> {
+    if (pagination.query) {
+      const searchResults = await this.deps.searchIndex.search(pagination.query, {
+        limit: pagination.limit,
+      });
+      return { total: searchResults.estimatedTotalHits, items: searchResults.hits };
+    }
+
     const redisKey = generateRedisKey(RedisKeyPrefix.PRODUCT, pagination.page, pagination.limit);
     const cachedProducts = await this.deps.redis.get(redisKey);
 

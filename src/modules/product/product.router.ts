@@ -1,6 +1,9 @@
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
+import { Index } from 'meilisearch';
 
+import { Product } from '@/shared/infrastructure/db/schema/product.schema';
+import { paginationZodSchema } from '@/shared/infrastructure/zod/pagination.schema';
 import { paramsZodSchema } from '@/shared/infrastructure/zod/params.schema';
 
 import { ProductCommands } from './product.commands';
@@ -11,16 +14,23 @@ import { searchProductZodSchema } from './schemas/search.schema';
 interface Deps {
   commands: ProductCommands;
   queries: IProductQueries;
+  searchIndex: Index<Pick<Product, 'id' | 'name' | 'price'>>;
 }
 
 export function createProductRouter(deps: Deps): Hono {
   const productRouter = new Hono();
 
-  productRouter.get('/', zValidator('query', searchProductZodSchema), async c => {
+  productRouter.get('/', zValidator('query', paginationZodSchema), async c => {
     const query = c.req.valid('query');
     const data = await deps.queries.findAll(query);
     return c.json(data);
   });
+
+  // productRouter.get('/search', zValidator('query', searchProductZodSchema), async c => {
+  //   const query = c.req.valid('query');
+  //   const data = await deps.queries.findAll(query);
+  //   return c.json(data);
+  // });
 
   // TODO: гвард на авторизацию админа
   productRouter.post('/', zValidator('json', createProductZodSchema), async c => {

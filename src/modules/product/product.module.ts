@@ -27,6 +27,7 @@ export function createProductModule(
     productQueries,
     redis: deps.redis,
     getCount: deps.dataCounterQueries.getCount,
+    searchIndex: deps.searchIndex,
   });
   return { commands, queries: cachedQueries };
 }

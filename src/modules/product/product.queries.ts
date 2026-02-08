@@ -9,7 +9,9 @@ interface Deps {
 }
 
 export interface IProductQueries {
-  findAll(pagination?: IPagination): Promise<IPaginationResult<Product>>;
+  findAll(
+    pagination?: IPagination,
+  ): Promise<IPaginationResult<Pick<Product, 'id' | 'name' | 'price'>>>;
   findById(id: string): Promise<Product>;
 }
 
