@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
+    "dev": "bun run --watch src/index.ts",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "drizzle:studio": "drizzle-kit studio",
