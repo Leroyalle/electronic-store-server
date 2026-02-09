@@ -3,7 +3,11 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 import { ISendEmailPayload } from '@/shared/types/send-email-payload.type';
 
-export class MailerService {
+export interface IMailerService {
+  send: (payload: ISendEmailPayload) => void;
+}
+
+export class MailerService implements IMailerService {
   constructor(
     private readonly client: Transporter<SMTPTransport.SentMessageInfo, SMTPTransport.Options>,
   ) {}
