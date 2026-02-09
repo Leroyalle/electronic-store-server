@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
 import { getEnv } from '../../lib/helpers/get-env.helper';
 
@@ -11,7 +11,7 @@ import * as productSchema from './schema/product.schema';
 import * as refreshTokenSchema from './schema/refresh-token.schema';
 import * as userSchema from './schema/user.schema';
 
-const client = new Client({
+const client = new Pool({
   host: getEnv('DB_HOST'),
   port: parseInt(getEnv('DB_PORT')),
   user: getEnv('DB_USER'),
@@ -30,6 +30,8 @@ const schema = {
   ...dataCounterSchema,
 };
 
-export const db = drizzle(client, { schema });
+export const db = drizzle(client, {
+  schema,
+});
 
 export type DB = typeof db;
