@@ -1,6 +1,7 @@
 import { createAuthModule } from './modules/auth/auth.module';
 import { createCartModule } from './modules/cart/cart.module';
 import { createDataCounterModule } from './modules/data-counter/data-counter.module';
+import { createMailerModule } from './modules/mailer/mailer.module';
 import { createMeilisearchModule } from './modules/meilisearch/meilisearch.module';
 import { createOrderModule } from './modules/order/order.module';
 import { createProductModule } from './modules/product/product.module';
@@ -10,6 +11,7 @@ import { db } from './shared/infrastructure/db/client';
 import { redis } from './shared/infrastructure/redis/client';
 
 export function createModules() {
+  const mailer = createMailerModule({ redis });
   const meilisearch = createMeilisearchModule();
 
   const telegram = createTelegramModule();
@@ -46,5 +48,6 @@ export function createModules() {
     telegram,
     dataCounter,
     meilisearch,
+    mailer,
   };
 }

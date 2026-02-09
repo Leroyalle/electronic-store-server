@@ -1,5 +1,6 @@
 import Redis from 'ioredis';
 
+import { BrokerQueues } from '@/shared/constants/broker-queues.constants';
 import { createQueue } from '@/shared/infrastructure/bullmq/queue-factory';
 import { TAuthQueuePayload } from '@/shared/types/auth-queue-payload.type';
 import { CreateModuleResult } from '@/shared/types/create-module.result.type';
@@ -21,9 +22,10 @@ export function createAuthModule(deps: CreateAuthModuleDeps): CreateModuleResult
   const codeModule = createCodeModule({ redis: deps.redis });
 
   const producer = createQueue<TAuthQueuePayload['data'], any, TAuthQueuePayload['name']>(
-    'auth',
+    BrokerQueues.AUTH,
     deps.redis,
   );
+
   const authCommands = new AuthCommands({
     tokenCommands: tokenModule.commands,
     tokenService: tokenModule.service,

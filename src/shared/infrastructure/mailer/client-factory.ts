@@ -9,7 +9,7 @@ export function createMailerClient() {
     port: parseInt(getEnv('MAIL_PORT')),
     auth: {
       user: getEnv('MAIL_USER'),
-      pass: getEnv('MAIL_PASSWORD'),
+      pass: getEnv('MAIL_PASS'),
     },
   });
 

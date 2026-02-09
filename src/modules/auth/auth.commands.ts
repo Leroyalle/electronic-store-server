@@ -110,6 +110,7 @@ export class AuthCommands {
     input: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'role' | 'isVerified'>,
   ): Promise<{ status: 'success' }> {
     const findUser = await this.deps.userQueries.findByEmail(input.email);
+
     if (findUser) throw new Error('Пользователь уже зарегистрирован');
 
     const hashedPassword = await argon2.hash(input.password);
