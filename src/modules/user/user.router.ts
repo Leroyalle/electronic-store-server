@@ -19,8 +19,8 @@ export function createUserRouter(deps: CreateUserRouterDeps): Hono {
   const userRouter = new Hono();
 
   userRouter.get('/:id', zValidator('param', paramsZodSchema), c => {
-    const id = c.req.valid('param');
-    const data = deps.queries.findById(id);
+    const params = c.req.valid('param');
+    const data = deps.queries.findById(params.id);
     return c.json(data);
   });
 

@@ -32,9 +32,9 @@ export function createProductRouter(deps: Deps): Hono {
     return c.json(data, 201);
   });
 
-  productRouter.get('/:id', zValidator('param', paramsZodSchema), c => {
-    const id = c.req.valid('param');
-    const data = deps.queries.findById(id);
+  productRouter.get('/:id', zValidator('param', paramsZodSchema), async c => {
+    const params = c.req.valid('param');
+    const data = await deps.queries.findById(params.id);
     return c.json(data);
   });
 

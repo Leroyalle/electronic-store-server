@@ -41,9 +41,9 @@ export function createCartRouter(deps: Deps): Hono {
     deps.accessAuthMiddleware,
     zValidator('param', paramsZodSchema),
     async c => {
-      const cartItemId = c.req.valid('param');
+      const params = c.req.valid('param');
       const userId = c.get('userId');
-      const data = await deps.commands.removeItem(userId, cartItemId);
+      const data = await deps.commands.removeItem(userId, params.id);
       return c.json(data);
     },
   );
@@ -54,8 +54,8 @@ export function createCartRouter(deps: Deps): Hono {
     zValidator('param', paramsZodSchema),
     async c => {
       const userId = c.get('userId');
-      const cartItemId = c.req.valid('param');
-      const data = await deps.commands.decrementItem(userId, cartItemId);
+      const params = c.req.valid('param');
+      const data = await deps.commands.decrementItem(userId, params.id);
       return c.json(data);
     },
   );
