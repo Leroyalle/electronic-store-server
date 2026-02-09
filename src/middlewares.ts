@@ -1,4 +1,4 @@
-import { AuthCommands } from './modules/auth/auth.command';
+import { AuthCommands } from './modules/auth/auth.commands';
 import { accessAuthGuard } from './shared/infrastructure/middlewares/access-auth.guard';
 import { refreshGuard } from './shared/infrastructure/middlewares/refresh-auth.guard';
 

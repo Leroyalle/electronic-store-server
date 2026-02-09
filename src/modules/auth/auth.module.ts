@@ -7,7 +7,7 @@ import { CreateModuleResult } from '@/shared/types/create-module.result.type';
 import { UserCommands } from '../user/user.commands';
 import { UserQueries } from '../user/user.queries';
 
-import { AuthCommands } from './auth.command';
+import { AuthCommands } from './auth.commands';
 import { createCodeModule } from './code/code.module';
 import { createTokenModule } from './token/token.module';
 

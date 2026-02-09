@@ -1,7 +1,7 @@
 import { MiddlewareHandler } from 'hono';
 import { getCookie } from 'hono/cookie';
 
-import { AuthCommands } from '@/modules/auth/auth.command';
+import { AuthCommands } from '@/modules/auth/auth.commands';
 import { RefreshAuthVars } from '@/shared/types/auth-variables.type';
 
 export function refreshGuard(

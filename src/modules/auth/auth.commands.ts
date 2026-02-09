@@ -24,7 +24,7 @@ type SuccessRegisterResult = SuccessLoginResult & {
   refreshToken: string;
 };
 
-export interface AuthCommandsDeps {
+export interface Deps {
   userQueries: UserQueries;
   userCommands: UserCommands;
   tokenService: TokenService;
@@ -35,9 +35,47 @@ export interface AuthCommandsDeps {
 }
 
 export class AuthCommands {
-  constructor(private readonly deps: AuthCommandsDeps) {}
+  constructor(private readonly deps: Deps) {}
 
-  public async verifyCode(email: string, code: number): Promise<RegisterResult> {
+  public async resetPassword(email: string, newPassword: string) {
+    const findUser = await this.deps.userQueries.findByEmail(email);
+    if (!findUser) throw new Error('Пользователь не найден');
+    if (findUser.isVerified) throw new Error('Пользователь уже верифицирован');
+    const isSame = await argon2.verify(findUser.password, newPassword);
+
+    if (isSame) throw new Error('Новый пароль не должен совпадать со старым');
+
+    const code = await this.deps.codeCommands.create({
+      userId: findUser.id,
+      type: 'reset_password',
+    });
+
+    await this.addAuthJob('reset_password', { email: findUser.email, code });
+
+    return { success: true };
+  }
+
+  public async verifyPasswordCode(email: string, code: number, newPassword: string) {
+    const findUser = await this.deps.userQueries.findByEmail(email);
+
+    if (!findUser) throw new Error('Пользователь не найден');
+
+    if (findUser.isVerified) throw new Error('Пользователь уже верифицирован');
+
+    const findCode = await this.deps.codeQueries.findByUserId({
+      userId: findUser.id,
+      type: 'reset_password',
+    });
+
+    if (!findCode) throw new Error('Код не найден');
+    if (parseInt(findCode) !== code) throw new Error('Неверный код');
+
+    await this.deps.userCommands.update(findUser.id, { password: await argon2.hash(newPassword) });
+
+    return { success: true };
+  }
+
+  public async verifyEmailCode(email: string, code: number): Promise<RegisterResult> {
     const findUser = await this.deps.userQueries.findByEmail(email);
 
     if (!findUser) throw new Error('Пользователь не найден');

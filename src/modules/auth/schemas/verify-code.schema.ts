@@ -1,7 +1,10 @@
 import z from 'zod';
 
-export const verifyCodeZodSchema = z.object({
+export const verifyEmailCodeZodSchema = z.object({
   code: z.coerce.number().min(4).max(4),
-  // type: z.enum(['verify_email', 'reset_password']),
   email: z.email(),
+});
+
+export const verifyPasswordCodeZodSchema = verifyEmailCodeZodSchema.extend({
+  newPassword: z.string().min(6).max(20),
 });

@@ -7,5 +7,5 @@ export function createMailerModule() {
   const client = createMailerClient();
   const service = new MailerService(client);
   const consumer = createConsumer({ service });
-  return { service, worker: consumer };
+  return { service, consumer };
 }
