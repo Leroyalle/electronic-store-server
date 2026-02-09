@@ -1,4 +1,4 @@
-import { User } from '@/shared/db/schema/user.schema';
+import { User } from '@/shared/infrastructure/db/schema/user.schema';
 
 import { IUserRepository } from './user.repo';
 
@@ -9,11 +9,11 @@ export type UserCommandsDeps = {
 export class UserCommands {
   constructor(private deps: UserCommandsDeps) {}
 
-  public async create(user: Omit<User, 'id'>) {
+  public async create(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) {
     return await this.deps.userRepo.create(user);
   }
 
-  public update(user: Partial<Omit<User, 'id'>>) {
-    return this.deps.userRepo.update(user);
+  public update(id: string, user: Partial<Omit<User, 'id'>>) {
+    return this.deps.userRepo.update(id, user);
   }
 }

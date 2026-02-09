@@ -7,8 +7,8 @@ import { User, userSchema } from '../../shared/infrastructure/db/schema/user.sch
 export interface IUserRepository {
   findById(id: string): Promise<User | undefined>;
   findByEmail(email: string): Promise<User | undefined>;
-  create(user: Omit<User, 'id'>): Promise<User>;
-  update(user: Partial<Omit<User, 'id'>>): Promise<User>;
+  create(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
+  update(id: string, user: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>): Promise<User>;
 }
 
 export class UserRepo implements IUserRepository {
@@ -20,11 +20,14 @@ export class UserRepo implements IUserRepository {
     return await db.query.userSchema.findFirst({ where: eq(userSchema.email, email) });
   }
 
-  public async create(user: Omit<User, 'id'>): Promise<User> {
+  public async create(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
     return (await db.insert(userSchema).values(user).returning())[0];
   }
 
-  public async update(user: Partial<Omit<User, 'id'>>): Promise<User> {
-    return (await db.update(userSchema).set(user).returning())[0];
+  public async update(
+    id: string,
+    user: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>,
+  ): Promise<User> {
+    return (await db.update(userSchema).set(user).where(eq(userSchema.id, id)).returning())[0];
   }
 }
