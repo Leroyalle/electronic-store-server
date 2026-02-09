@@ -5,7 +5,7 @@ import { getEnv } from '@/shared/lib/helpers/get-env.helper';
 import { ISendEmailPayload } from '@/shared/types/send-email-payload.type';
 
 export interface IMailerService {
-  send: (payload: ISendEmailPayload) => void;
+  send: (payload: ISendEmailPayload) => Promise<void>;
 }
 
 export class MailerService implements IMailerService {
@@ -13,9 +13,9 @@ export class MailerService implements IMailerService {
     private readonly client: Transporter<SMTPTransport.SentMessageInfo, SMTPTransport.Options>,
   ) {}
 
-  public async send(payload: ISendEmailPayload) {
+  public async send(payload: ISendEmailPayload): Promise<void> {
     try {
-      return await this.client.sendMail({
+      await this.client.sendMail({
         from: `"RESTORE" <${getEnv('MAIL_USER')}>`,
         to: payload.to,
         subject: payload.subject,

@@ -18,14 +18,24 @@ export function createConsumer(deps: Deps) {
     async job => {
       console.log(`📩 Обработка задачи [${job.name}] для: ${job.data.email}`);
       switch (job.name) {
-        case 'verify_email':
+        case 'verify_email': {
           const data = job.data as Extract<TAuthQueuePayload, { name: 'verify_email' }>['data'];
           const payload: ISendEmailPayload = {
             to: data.email,
-            subject: 'Verify your email',
+            subject: 'Подтверждение почты',
             text: `Ваш верификационный код подтверждения почты - ${data.code}`,
           };
           return await deps.service.send(payload);
+        }
+        case 'reset_password': {
+          const data = job.data as Extract<TAuthQueuePayload, { name: 'reset_password' }>['data'];
+          const payload: ISendEmailPayload = {
+            to: data.email,
+            subject: 'Подтверждение сброса пароля',
+            text: `Код для сброса пароля - ${data.code}`,
+          };
+          return await deps.service.send(payload);
+        }
         default:
           throw new Error(`Job ${job.name} is not handled in Auth Worker`);
       }
