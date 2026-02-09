@@ -1,6 +1,6 @@
 import { createWorker } from '@/shared/infrastructure/bullmq/worker-factory';
 import { createMailerClient } from '@/shared/infrastructure/mailer/client-factory';
-import { AuthJobNames } from '@/shared/types/auth-queue-payload.type';
+import { TAuthQueuePayload } from '@/shared/types/auth-queue-payload.type';
 import { ISendEmailPayload } from '@/shared/types/send-email-payload.type';
 
 import { MailerService } from './mailer.service';
@@ -8,12 +8,18 @@ import { MailerService } from './mailer.service';
 export function createMailerModule() {
   const client = createMailerClient();
   const service = new MailerService(client);
-  const consumer = createWorker<ISendEmailPayload, void, AuthJobNames>(
+  const consumer = createWorker<TAuthQueuePayload['data'], void, TAuthQueuePayload['name']>(
     'auth',
     async job => {
       switch (job.name) {
         case 'verify_email':
-          return await service.send(job.data);
+          const data = job.data as Extract<TAuthQueuePayload, { name: 'verify_email' }>['data'];
+          const payload: ISendEmailPayload = {
+            to: data.email,
+            subject: 'Verify your email',
+            text: `Ваш верификационный код подтверждения почты - ${data.code}`,
+          };
+          return await service.send(payload);
         default:
           throw new Error(`Job ${job.name} is not handled in Auth Worker`);
       }
