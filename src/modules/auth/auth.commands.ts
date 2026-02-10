@@ -2,6 +2,7 @@ import * as argon2 from 'argon2';
 
 import { INotificationProducer } from '@/shared/infrastructure/broker/producers/notification.producer';
 import { User } from '@/shared/infrastructure/db/schema/user.schema';
+import { SignReturnValue } from '@/shared/types/sign-return-value.type';
 
 import { UserCommands } from '../user/user.commands';
 import { UserQueries } from '../user/user.queries';
@@ -15,11 +16,16 @@ import { TokenService } from './token/token.service';
 type RegisterResult = SuccessRegisterResult;
 type LoginResult = SuccessLoginResult;
 
+type AuthTokens = {
+  accessToken: SignReturnValue<'access'>;
+  refreshToken: SignReturnValue<'refresh'>;
+};
+
 type SuccessLoginResult = {
   status: 'success';
-  accessToken: string;
-  refreshToken: string;
-};
+  // accessToken: string;
+  // refreshToken: string;
+} & AuthTokens;
 
 type SuccessRegisterResult = SuccessLoginResult;
 
@@ -106,7 +112,7 @@ export class AuthCommands {
       revokedAt: null,
     });
 
-    return { status: 'success', accessToken: accessToken.token, refreshToken: refreshToken.token };
+    return { status: 'success', accessToken, refreshToken };
   }
 
   public async register(
@@ -159,7 +165,7 @@ export class AuthCommands {
       expAt: refreshToken.expAt,
       revokedAt: null,
     });
-    return { status: 'success', accessToken: accessToken.token, refreshToken: refreshToken.token };
+    return { status: 'success', accessToken, refreshToken };
   }
 
   public async verifyToken<T extends 'access' | 'refresh'>(token: string, type: T) {
@@ -191,7 +197,7 @@ export class AuthCommands {
       expAt: refreshToken.expAt,
       revokedAt: null,
     });
-    return { accessToken: accessToken.token, refreshToken: refreshToken.token };
+    return { accessToken, refreshToken };
   }
 
   public async findByJti(jti: string) {
