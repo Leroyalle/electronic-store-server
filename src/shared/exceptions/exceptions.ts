@@ -26,6 +26,9 @@ export class NotFoundException extends DomainException {
   public static Token() {
     return new NotFoundException('Токен');
   }
+  public static CartItem() {
+    return new NotFoundException('Товар в корзине');
+  }
 }
 
 export class AlreadyExistsException extends DomainException {
@@ -60,6 +63,7 @@ export class InsufficientStockException extends ProductException {}
 
 export abstract class OrderException extends DomainException {}
 export class CartIsEmptyException extends OrderException {}
+export class CartCreationFailedException extends OrderException {}
 
 export class InternalServerException extends DomainException {}
 export class ValidationException extends DomainException {}
