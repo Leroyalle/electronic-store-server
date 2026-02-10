@@ -1,8 +1,6 @@
 import Redis from 'ioredis';
 
-import { BrokerQueues } from '@/shared/constants/broker-queues.constants';
-import { createQueue } from '@/shared/infrastructure/bullmq/queue-factory';
-import { TAuthQueuePayload } from '@/shared/types/auth-queue-payload.type';
+import { INotificationProducer } from '@/shared/infrastructure/broker/producers/notification.producer';
 import { CreateModuleResult } from '@/shared/types/create-module.result.type';
 
 import { UserCommands } from '../user/user.commands';
@@ -16,24 +14,20 @@ type CreateAuthModuleDeps = {
   userCommands: UserCommands;
   userQueries: UserQueries;
   redis: Redis;
+  notificationProducer: INotificationProducer;
 };
 export function createAuthModule(deps: CreateAuthModuleDeps): CreateModuleResult<AuthCommands> {
   const tokenModule = createTokenModule();
   const codeModule = createCodeModule({ redis: deps.redis });
-
-  const producer = createQueue<TAuthQueuePayload['data'], any, TAuthQueuePayload['name']>(
-    BrokerQueues.AUTH,
-    deps.redis,
-  );
 
   const authCommands = new AuthCommands({
     tokenCommands: tokenModule.commands,
     tokenService: tokenModule.service,
     userCommands: deps.userCommands,
     userQueries: deps.userQueries,
-    authProducer: producer,
     codeCommands: codeModule.commands,
     codeQueries: codeModule.queries,
+    notificationProducer: deps.notificationProducer,
   });
   return { commands: authCommands };
 }

@@ -1,8 +1,7 @@
 import * as argon2 from 'argon2';
-import { Queue } from 'bullmq';
 
+import { INotificationProducer } from '@/shared/infrastructure/broker/producers/notification.producer';
 import { User } from '@/shared/infrastructure/db/schema/user.schema';
-import { TAuthQueuePayload } from '@/shared/types/auth-queue-payload.type';
 
 import { UserCommands } from '../user/user.commands';
 import { UserQueries } from '../user/user.queries';
@@ -31,7 +30,7 @@ export interface Deps {
   tokenCommands: TokenCommands;
   codeCommands: CodeCommands;
   codeQueries: CodeQueries;
-  authProducer: Queue<TAuthQueuePayload['data'], any, TAuthQueuePayload['name']>;
+  notificationProducer: INotificationProducer;
 }
 
 export class AuthCommands {
@@ -50,7 +49,10 @@ export class AuthCommands {
       type: 'reset_password',
     });
 
-    await this.addAuthJob('reset_password', { email: findUser.email, code });
+    await this.deps.notificationProducer.sendEmail('reset_password', {
+      email: findUser.email,
+      code,
+    });
 
     return { success: true };
   }
@@ -127,16 +129,12 @@ export class AuthCommands {
       type: 'verify_email',
     });
 
-    await this.addAuthJob('verify_email', { email: createdUser.email, code });
+    await this.deps.notificationProducer.sendEmail('verify_email', {
+      email: createdUser.email,
+      code,
+    });
 
     return { status: 'success' };
-  }
-
-  private async addAuthJob<K extends TAuthQueuePayload['name']>(
-    name: K,
-    data: Extract<TAuthQueuePayload, { name: K }>['data'],
-  ) {
-    return await this.deps.authProducer.add(name, data);
   }
 
   public async login(data: Pick<User, 'email' | 'password'>): Promise<LoginResult> {
