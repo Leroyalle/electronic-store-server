@@ -48,7 +48,7 @@ const userRouter = createUserRouter({
   accessAuthMiddleware: accessGuard,
 });
 
-const authRouter = createAuthRouter({ commands: auth.commands, refreshGuard });
+const authRouter = createAuthRouter({ commands: auth.commands, refreshGuard, accessGuard });
 
 const productRouter = createProductRouter({
   commands: product.commands,
