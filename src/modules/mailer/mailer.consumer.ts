@@ -16,7 +16,6 @@ export function createConsumer(deps: Deps) {
   const consumer = createWorker<TMailQueuePayload['data'], void, TMailQueuePayload['name']>(
     BrokerQueues.EMAIL,
     async job => {
-      console.log(`📩 Обработка задачи [${job.name}] для: ${job.data.email}`);
       switch (job.name) {
         case 'verify_email': {
           const data = job.data as Extract<TMailQueuePayload, { name: 'verify_email' }>['data'];
