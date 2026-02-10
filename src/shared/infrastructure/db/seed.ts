@@ -3,14 +3,16 @@ import { createModules } from '@/modules';
 import { db } from './client';
 import { productSchema } from './schema/product.schema';
 
+const { product, meilisearch } = createModules();
+
 async function clear() {
-  console.log('Clearing database...');
+  console.log('Clearing...');
   await db.delete(productSchema);
+  await meilisearch.indexes.productIndex.deleteAllDocuments().waitTask();
 }
 
 async function seed() {
   console.log('Seeding data...');
-  const { product } = createModules();
 
   for (let i = 0; i < 10; i++) {
     await product.commands.create({
