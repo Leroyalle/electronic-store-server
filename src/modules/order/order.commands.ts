@@ -1,7 +1,7 @@
+import { INotificationProducer } from '@/shared/infrastructure/broker/producers/notification.producer';
 import { Order } from '@/shared/infrastructure/db/schema/order.schema';
 
 import { CartQueries } from '../cart/cart.queries';
-import { TelegramCommands } from '../telegram/telegram.commands';
 import { UserQueries } from '../user/user.queries';
 
 import { IOrderRepository } from './order.repo';
@@ -10,7 +10,8 @@ interface Deps {
   orderRepo: IOrderRepository;
   cartQueries: CartQueries;
   userQueries: UserQueries;
-  notifierCommands: TelegramCommands;
+  // notifierCommands: TelegramCommands;
+  notificationProducer: INotificationProducer;
 }
 
 export class OrderCommands {
@@ -50,8 +51,11 @@ export class OrderCommands {
       })),
     });
 
-    await this.deps.notifierCommands.notifyAdminNewOrder(user, order);
+    await this.deps.notificationProducer.sendAdminTelegramNotification('new_order_alert', {
+      user,
+      order,
+    });
 
-    // TODO: отправить уведомление о новом заказе в тг
+    return { success: true };
   }
 }

@@ -7,14 +7,17 @@ import { createOrderModule } from './modules/order/order.module';
 import { createProductModule } from './modules/product/product.module';
 import { createTelegramModule } from './modules/telegram/telegram.module';
 import { createUserModule } from './modules/user/user.module';
+import { NotificationProducer } from './shared/infrastructure/broker/producers/notification.producer';
 import { db } from './shared/infrastructure/db/client';
 import { redis } from './shared/infrastructure/redis/client';
 
 export function createModules() {
+  const notificationProducer = new NotificationProducer(redis);
+
   const mailer = createMailerModule({ redis });
   const meilisearch = createMeilisearchModule();
 
-  const telegram = createTelegramModule();
+  const telegram = createTelegramModule({ redis });
 
   const dataCounter = createDataCounterModule({ db: db });
 
@@ -24,6 +27,7 @@ export function createModules() {
     userCommands: user.commands,
     userQueries: user.queries,
     redis,
+    notificationProducer,
   });
   const product = createProductModule({
     dataCounterQueries: dataCounter.queries,
@@ -37,7 +41,8 @@ export function createModules() {
   const order = createOrderModule({
     cartQueries: cart.queries,
     userQueries: user.queries,
-    notifierCommands: telegram.commands,
+    notificationProducer: notificationProducer,
+    redis,
   });
 
   return {

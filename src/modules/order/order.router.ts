@@ -26,7 +26,7 @@ export function createOrderRouter(deps: Deps): Hono {
     const userId = c.get('userId');
     const body = c.req.valid('json');
     const result = await deps.commands.createOrder(userId, body);
-    return c.json(result);
+    return c.json({ success: result.success, message: 'Заказ успешно создан!' });
   });
 
   return router;

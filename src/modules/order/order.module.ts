@@ -1,7 +1,9 @@
+import Redis from 'ioredis';
+
+import { INotificationProducer } from '@/shared/infrastructure/broker/producers/notification.producer';
 import { CreateModuleResult } from '@/shared/types/create-module.result.type';
 
 import { CartQueries } from '../cart/cart.queries';
-import { TelegramCommands } from '../telegram/telegram.commands';
 import { UserQueries } from '../user/user.queries';
 
 import { OrderCommands } from './order.commands';
@@ -10,18 +12,20 @@ import { OrderRepo } from './order.repo';
 
 interface Deps {
   cartQueries: CartQueries;
-  notifierCommands: TelegramCommands;
   userQueries: UserQueries;
+  redis: Redis;
+  notificationProducer: INotificationProducer;
 }
 
 export function createOrderModule(deps: Deps): CreateModuleResult<OrderCommands, OrderQueries> {
   const repository = new OrderRepo();
   const queries = new OrderQueries({ orderRepo: repository });
+
   const commands = new OrderCommands({
     orderRepo: repository,
     cartQueries: deps.cartQueries,
-    notifierCommands: deps.notifierCommands,
     userQueries: deps.userQueries,
+    notificationProducer: deps.notificationProducer,
   });
 
   return { commands, queries };

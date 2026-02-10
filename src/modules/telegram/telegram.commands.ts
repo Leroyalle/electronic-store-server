@@ -4,7 +4,11 @@ import { Order } from '@/shared/infrastructure/db/schema/order.schema';
 import { User } from '@/shared/infrastructure/db/schema/user.schema';
 import { getEnv } from '@/shared/lib/helpers/get-env.helper';
 
-export class TelegramCommands {
+export interface ITelegramCommands {
+  notifyAdminNewOrder(customer: User, order: Order): Promise<void>;
+}
+
+export class TelegramCommands implements ITelegramCommands {
   private adminChatId: string;
   constructor(private readonly bot: Bot) {
     this.adminChatId = getEnv('TELEGRAM_ADMIN_CHAT_ID');
@@ -22,14 +26,15 @@ export class TelegramCommands {
 
 *Order ID:* \`${order.id}\`
 *Пользователь:* ${customer.id}
-*Телефон:* ${customer.phone}
+*Телефон:* ${order.phone}
 
 *Состав заказа:*
 ${items}
 
 *Итого:* ${order.totalAmount} ₽
-*Создан:* ${order.createdAt.toISOString()}
+*Создан:* ${order.createdAt}
 `;
+    // NOTE: createdAt не восстанавливается в Date после сериализации
 
     await this.bot.api.sendMessage(this.adminChatId, message, {
       parse_mode: 'Markdown',
