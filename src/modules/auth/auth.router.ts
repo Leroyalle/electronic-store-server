@@ -47,6 +47,13 @@ export function createAuthRouter(deps: Deps): Hono {
   authRouter.post('/login', zValidator('json', loginZodSchema), async c => {
     const body = c.req.valid('json');
     const result = await deps.commands.login(body);
+    setCookie(c, 'refreshToken', result.refreshToken, {
+      httpOnly: true,
+      // secure: true,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+    });
     return c.json({ message: 'Авторизация прошла успешно!', accessToken: result.accessToken }, 201);
   });
 
@@ -88,6 +95,13 @@ export function createAuthRouter(deps: Deps): Hono {
     const userId = c.get('userId');
     const jti = c.get('jti');
     const result = await deps.commands.refresh(userId, jti);
+    setCookie(c, 'refreshToken', result.refreshToken, {
+      httpOnly: true,
+      // secure: true,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+    });
     return c.json({ message: 'Токен обновлен!', accessToken: result.accessToken }, 201);
   });
 

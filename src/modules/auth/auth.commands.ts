@@ -18,11 +18,10 @@ type LoginResult = SuccessLoginResult;
 type SuccessLoginResult = {
   status: 'success';
   accessToken: string;
-};
-
-type SuccessRegisterResult = SuccessLoginResult & {
   refreshToken: string;
 };
+
+type SuccessRegisterResult = SuccessLoginResult;
 
 export interface Deps {
   userQueries: UserQueries;
@@ -147,8 +146,20 @@ export class AuthCommands {
     const isPasswordValid = await argon2.verify(findUser.password, data.password);
     if (!isPasswordValid) throw new Error('Неверный пароль');
 
+    // const oldRefresh = await this.deps.tokenQueries.findValidByUserId(findUser.id);
+    // if (oldRefresh) await this.deps.tokenCommands.update(oldRefresh.id, { revokedAt: new Date() });
+
+    const refreshToken = await this.deps.tokenService.sign(findUser, 'refresh');
     const accessToken = await this.deps.tokenService.sign(findUser, 'access');
-    return { status: 'success', accessToken: accessToken.token };
+
+    await this.deps.tokenCommands.create({
+      token: refreshToken.token,
+      userId: findUser.id,
+      jti: refreshToken.jti,
+      expAt: refreshToken.expAt,
+      revokedAt: null,
+    });
+    return { status: 'success', accessToken: accessToken.token, refreshToken: refreshToken.token };
   }
 
   public async verifyToken<T extends 'access' | 'refresh'>(token: string, type: T) {
@@ -162,16 +173,25 @@ export class AuthCommands {
       throw new Error('Пользователь не найден');
     }
 
-    const refreshToken = await this.deps.tokenQueries.findByJti(jti);
+    const findRefresh = await this.deps.tokenQueries.findByJti(jti);
 
-    if (!refreshToken) {
+    if (!findRefresh) {
       throw new Error('Токен не найден');
     }
 
-    await this.deps.tokenCommands.update(refreshToken.id, { revokedAt: new Date() });
+    await this.deps.tokenCommands.update(findRefresh.id, { revokedAt: new Date() });
 
+    const refreshToken = await this.deps.tokenService.sign(user, 'refresh');
     const accessToken = await this.deps.tokenService.sign(user, 'access');
-    return { accessToken: accessToken.token };
+
+    await this.deps.tokenCommands.create({
+      token: refreshToken.token,
+      userId: user.id,
+      jti: refreshToken.jti,
+      expAt: refreshToken.expAt,
+      revokedAt: null,
+    });
+    return { accessToken: accessToken.token, refreshToken: refreshToken.token };
   }
 
   public async findByJti(jti: string) {
