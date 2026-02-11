@@ -3,3 +3,4 @@ node_modules/
 drizzle/
 **/.env
 **/.env.*
+!.env.example
