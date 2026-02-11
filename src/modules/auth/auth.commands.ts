@@ -1,3 +1,4 @@
+import { GitHub } from 'arctic';
 import * as argon2 from 'argon2';
 
 import {
@@ -17,6 +18,8 @@ import { UserQueries } from '../user/user.queries';
 
 import { CodeCommands } from './code/code.commands';
 import { CodeQueries } from './code/code.queries';
+import { ProviderName, providersMap, ProviderType } from './constants/providers-map.constant';
+import { providersScopeMap } from './constants/providers-scope-map.constant';
 import { TokenCommands } from './token/token.commands';
 import { ITokenQueries } from './token/token.queries';
 import { TokenService } from './token/token.service';
@@ -183,7 +186,16 @@ export class AuthCommands {
     return { accessToken, refreshToken };
   }
 
-  public async findByJti(jti: string) {
-    return await this.deps.tokenQueries.findByJti(jti);
+  public oauthLogin(providerName: ProviderName) {
+    const state = crypto.randomUUID();
+    const provider = providersMap[providerName];
+    const scope = providersScopeMap[providerName];
+    const url = provider.createAuthorizationURL(state, scope);
+
+    return { url, state };
   }
+
+  // public async findByJti(jti: string) {
+  //   return await this.deps.tokenQueries.findByJti(jti);
+  // }
 }

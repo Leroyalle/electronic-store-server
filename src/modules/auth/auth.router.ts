@@ -5,7 +5,9 @@ import { setCookie } from 'hono/cookie';
 import { AuthVars, RefreshAuthVars } from '@/shared/types/auth-variables.type';
 
 import { AuthCommands } from './auth.commands';
+import { providersMap } from './constants/providers-map.constant';
 import { loginZodSchema } from './schemas/login.schema';
+import { oauthProvider } from './schemas/oauth-provider.schema';
 import { registerZodSchema } from './schemas/register.schema';
 import {
   verifyEmailCodeZodSchema,
@@ -55,6 +57,19 @@ export function createAuthRouter(deps: Deps): Hono {
       expires: result.refreshToken.expAt,
     });
     return c.json({ message: 'Авторизация прошла успешно!', accessToken: result.accessToken }, 201);
+  });
+
+  authRouter.get('/login/:provider', zValidator('param', oauthProvider), c => {
+    const params = c.req.valid('param');
+    const result = deps.commands.oauthLogin(params.provider);
+    setCookie(c, 'oauth_state', result.state, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 10,
+      sameSite: 'Lax',
+    });
+    return c.redirect(result.url);
   });
 
   authRouter.post(
