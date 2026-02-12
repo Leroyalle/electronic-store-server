@@ -2,10 +2,12 @@ import { MiddlewareHandler } from 'hono';
 import { getCookie } from 'hono/cookie';
 
 import { AuthCommands } from '@/modules/auth/auth.commands';
+import { UserQueries } from '@/modules/user/user.queries';
 import { AuthVars } from '@/shared/types/auth-variables.type';
 
 export function accessAuthGuard(
   authCommands: AuthCommands,
+  userQueries: UserQueries,
 ): MiddlewareHandler<{ Variables: AuthVars }> {
   return async (c, next): Promise<Response | void> => {
     const accessToken = getCookie(c, 'accessToken');
@@ -21,8 +23,20 @@ export function accessAuthGuard(
         return c.json({ error: 'Unauthorized' }, 401);
       }
 
-      c.set('userId', payload.payload.sub);
-      c.set('role', payload.payload.role);
+      const account = await authCommands.findAccountById(payload.payload.sub);
+
+      if (!account || !account.userId) {
+        return c.json({ error: 'Unauthorized' }, 401);
+      }
+
+      const user = await userQueries.findById(account.userId);
+
+      if (!user) {
+        return c.json({ error: 'Unauthorized' }, 401);
+      }
+
+      c.set('user', user);
+      c.set('role', account.role);
 
       await next();
     } catch (error: any) {
