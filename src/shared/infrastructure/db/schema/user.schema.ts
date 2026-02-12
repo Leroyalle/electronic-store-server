@@ -3,6 +3,7 @@ import { pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 
 import { accountSchema } from './account.schema';
 import { cartSchema } from './cart.schema';
+import { orderSchema } from './order.schema';
 import { refreshTokenSchema } from './refresh-token.schema';
 import { pgTimestamp } from './timestamp';
 
@@ -21,9 +22,8 @@ export const userSchema = pgTable('users', {
 
 export const userRelation = relations(userSchema, ({ many, one }) => ({
   accounts: many(accountSchema),
-  refreshTokens: many(refreshTokenSchema),
   cart: one(cartSchema),
-  orders: many(refreshTokenSchema),
+  orders: many(orderSchema),
 }));
 
 export type User = InferSelectModel<typeof userSchema>;
