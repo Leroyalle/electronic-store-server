@@ -37,6 +37,7 @@ export function accessAuthGuard(
 
       c.set('user', user);
       c.set('role', account.role);
+      c.set('accountId', account.id);
 
       await next();
     } catch (error: any) {
