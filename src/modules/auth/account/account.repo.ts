@@ -12,8 +12,11 @@ import { ICreateAccount, IUpdateAccount } from '@/shared/types/auth/create-accou
 
 export interface IAccountRepository {
   findById(id: string): Promise<AccountWithRelations | undefined>;
+  findByProviderId(
+    id: string,
+  ): Promise<Omit<AccountWithRelations, 'credentialsAccount'> | undefined>;
   create(data: Omit<ICreateAccount, 'id' | 'createdAt' | 'updatedAt'>): Promise<Account>;
-  update(id: string, data: IUpdateAccount): Promise<Account>;
+  update(id: string, data: IUpdateAccount): Promise<Account | undefined>;
 }
 
 export class AccountRepo implements IAccountRepository {
@@ -27,26 +30,41 @@ export class AccountRepo implements IAccountRepository {
     });
   }
 
-  public async update(id: string, data: IUpdateAccount): Promise<Account> {
-    const [updatedAccount] = await db
-      .update(accountSchema)
-      .set(data.account)
-      .where(eq(accountSchema.id, id))
-      .returning();
+  public async findByProviderId(providerId: string) {
+    return await db.query.accountSchema.findFirst({
+      where: eq(oauthAccountSchema.providerAccountId, providerId),
+      with: {
+        oauthAccount: true,
+      },
+    });
+  }
+
+  public async update(id: string, data: IUpdateAccount): Promise<Account | undefined> {
+    if (data.account) {
+      await db.update(accountSchema).set(data.account).where(eq(accountSchema.id, id));
+    }
 
     if (data.providerDetails.type === 'oauth') {
       await db
         .update(oauthAccountSchema)
         .set(data.providerDetails)
-        .where(eq(oauthAccountSchema.accountId, updatedAccount.id));
+        .where(eq(oauthAccountSchema.accountId, id));
     } else if (data.providerDetails.type === 'credentials') {
       await db
         .update(credentialsAccountSchema)
         .set(data.providerDetails)
-        .where(eq(credentialsAccountSchema.accountId, updatedAccount.id));
+        .where(eq(credentialsAccountSchema.accountId, id));
     }
 
-    return updatedAccount;
+    const fullAccount = await db.query.accountSchema.findFirst({
+      where: eq(accountSchema.id, id),
+      with: {
+        oauthAccount: true,
+        credentialsDetails: true,
+      },
+    });
+
+    return fullAccount;
   }
 
   public async create(
