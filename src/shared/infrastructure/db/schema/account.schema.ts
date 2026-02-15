@@ -11,8 +11,8 @@ export const roles = ['user', 'admin'] as const;
 export const roleEnum = pgEnum('role', roles);
 
 const providersArray = Object.keys(providersMap) as [ProviderName, ...ProviderName[]];
-const providers = pgEnum('provider', [...providersArray, 'credentials']);
-const type = pgEnum('type', ['oauth', 'credentials']);
+export const providers = pgEnum('provider', [...providersArray, 'credentials']);
+export const type = pgEnum('type', ['oauth', 'credentials']);
 
 export const oauthAccountSchema = pgTable('oauthAccounts', {
   accountId: uuid()
@@ -48,8 +48,15 @@ export const accountRelations = relations(accountSchema, ({ one, many }) => ({
     references: [userSchema.id],
   }),
   refreshTokens: many(refreshTokenSchema),
-  oauthAccount: one(oauthAccountSchema),
-  credentialsAccount: one(credentialsAccountSchema),
+  oauthAccount: one(oauthAccountSchema, {
+    fields: [accountSchema.id],
+    references: [oauthAccountSchema.accountId],
+  }),
+
+  credentialsAccount: one(credentialsAccountSchema, {
+    fields: [accountSchema.id],
+    references: [credentialsAccountSchema.accountId],
+  }),
 }));
 
 export type Account = InferSelectModel<typeof accountSchema>;
