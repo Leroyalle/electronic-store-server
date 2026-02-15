@@ -8,6 +8,7 @@ import { UserQueries } from '../user/user.queries';
 
 import { createAccountModule } from './account/account.module';
 import { AuthCommands } from './auth.commands';
+import { AuthQueries, IAuthQueries } from './auth.queries';
 import { createCodeModule } from './code/code.module';
 import { createTokenModule } from './token/token.module';
 
@@ -17,10 +18,16 @@ type CreateAuthModuleDeps = {
   redis: Redis;
   notificationProducer: INotificationProducer;
 };
-export function createAuthModule(deps: CreateAuthModuleDeps): CreateModuleResult<AuthCommands> {
+export function createAuthModule(
+  deps: CreateAuthModuleDeps,
+): CreateModuleResult<AuthCommands, IAuthQueries> {
   const tokenModule = createTokenModule();
   const codeModule = createCodeModule({ redis: deps.redis });
   const accountModule = createAccountModule();
+  const authQueries = new AuthQueries({
+    tokenQueries: tokenModule.queries,
+    accountQueries: accountModule.queries,
+  });
 
   const authCommands = new AuthCommands({
     tokenCommands: tokenModule.commands,
@@ -34,5 +41,5 @@ export function createAuthModule(deps: CreateAuthModuleDeps): CreateModuleResult
     accountCommands: accountModule.commands,
     accountQueries: accountModule.queries,
   });
-  return { commands: authCommands };
+  return { commands: authCommands, queries: authQueries };
 }
