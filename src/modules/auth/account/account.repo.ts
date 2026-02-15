@@ -40,31 +40,36 @@ export class AccountRepo implements IAccountRepository {
   }
 
   public async update(id: string, data: IUpdateAccount): Promise<Account | undefined> {
-    if (data.account) {
-      await db.update(accountSchema).set(data.account).where(eq(accountSchema.id, id));
-    }
+    return db.transaction(async tx => {
+      if (data.account) {
+        await tx.update(accountSchema).set(data.account).where(eq(accountSchema.id, id));
+      }
 
-    if (data.providerDetails.type === 'oauth') {
-      await db
-        .update(oauthAccountSchema)
-        .set(data.providerDetails)
-        .where(eq(oauthAccountSchema.accountId, id));
-    } else if (data.providerDetails.type === 'credentials') {
-      await db
-        .update(credentialsAccountSchema)
-        .set(data.providerDetails)
-        .where(eq(credentialsAccountSchema.accountId, id));
-    }
+      if (data.providerDetails.type === 'oauth') {
+        await tx
+          .update(oauthAccountSchema)
+          .set({ providerAccountId: data.providerDetails.providerAccountId })
+          .where(eq(oauthAccountSchema.accountId, id));
+      } else if (data.providerDetails.type === 'credentials') {
+        await tx
+          .update(credentialsAccountSchema)
+          .set({
+            password: data.providerDetails.password,
+            isVerified: data.providerDetails.isVerified,
+          })
+          .where(eq(credentialsAccountSchema.accountId, id));
+      }
 
-    const fullAccount = await db.query.accountSchema.findFirst({
-      where: eq(accountSchema.id, id),
-      with: {
-        oauthAccount: true,
-        credentialsDetails: true,
-      },
+      const fullAccount = await tx.query.accountSchema.findFirst({
+        where: eq(accountSchema.id, id),
+        with: {
+          oauthAccount: true,
+          credentialsDetails: true,
+        },
+      });
+
+      return fullAccount;
     });
-
-    return fullAccount;
   }
 
   public async create(
