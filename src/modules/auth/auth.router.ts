@@ -9,6 +9,7 @@ import { loginZodSchema } from './schemas/login.schema';
 import { oauthCallbackZodSchema } from './schemas/oauth-callback.schema';
 import { oauthProviderZodSchema } from './schemas/oauth-provider.schema';
 import { registerZodSchema } from './schemas/register.schema';
+import { resetPasswordZodSchema } from './schemas/reset-password.schema';
 import {
   verifyEmailCodeZodSchema,
   verifyPasswordCodeZodSchema,
@@ -100,7 +101,7 @@ export function createAuthRouter(deps: Deps): Hono {
   authRouter.post(
     '/reset-password',
     deps.accessGuard,
-    zValidator('json', loginZodSchema),
+    zValidator('json', resetPasswordZodSchema),
     async c => {
       const body = c.req.valid('json');
       const user = c.get('user');
