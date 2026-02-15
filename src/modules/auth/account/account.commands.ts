@@ -5,7 +5,7 @@ import { IAccountRepository } from './account.repo';
 
 export interface IAccountCommands {
   create(data: Omit<ICreateAccount, 'id' | 'createdAt' | 'updatedAt'>): Promise<Account>;
-  update(id: string, data: IUpdateAccount): Promise<Account>;
+  update(id: string, data: IUpdateAccount): Promise<Account | undefined>;
 }
 
 interface Deps {
@@ -19,7 +19,7 @@ export class AccountCommands implements IAccountCommands {
     return this.deps.repository.create(data);
   }
 
-  public update(id: string, data: IUpdateAccount): Promise<Account> {
+  public update(id: string, data: IUpdateAccount): Promise<Account | undefined> {
     return this.deps.repository.update(id, data);
   }
 }
