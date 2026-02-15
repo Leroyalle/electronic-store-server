@@ -64,7 +64,7 @@ export class AccountRepo implements IAccountRepository {
         where: eq(accountSchema.id, id),
         with: {
           oauthAccount: true,
-          credentialsDetails: true,
+          credentialsAccount: true,
         },
       });
 

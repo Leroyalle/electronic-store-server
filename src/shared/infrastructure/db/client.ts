@@ -23,14 +23,14 @@ const client = new Pool({
 
 const schema = {
   ...cartSchema,
+  ...userSchema,
+  ...accountSchema,
   ...cartItemSchema,
   ...productSchema,
-  ...userSchema,
   ...orderSchema,
   ...refreshTokenSchema,
   ...dataCounterSchema,
-  ...accountSchema,
-};
+} as const;
 
 export const db = drizzle(client, {
   schema,
