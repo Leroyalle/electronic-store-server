@@ -248,6 +248,7 @@ export class AuthCommands {
   }
 
   public async refresh(accountId: string, jti: string) {
+    console.log('accountId', accountId);
     const account = await this.deps.accountQueries.findById(accountId);
 
     if (!account || !account.userId) throw NotFoundException.Account();
@@ -262,11 +263,8 @@ export class AuthCommands {
 
     await this.deps.tokenCommands.update(findRefresh.id, { revokedAt: new Date() });
 
-    const refreshToken = await this.deps.tokenService.sign(
-      { id: user.id, role: 'user' },
-      'refresh',
-    );
-    const accessToken = await this.deps.tokenService.sign({ id: user.id, role: 'user' }, 'access');
+    const refreshToken = await this.deps.tokenService.sign(account, 'refresh');
+    const accessToken = await this.deps.tokenService.sign(account, 'access');
 
     await this.deps.tokenCommands.create({
       token: refreshToken.token,
