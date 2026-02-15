@@ -14,6 +14,9 @@ export class NotFoundException extends DomainException {
   public static User() {
     return new NotFoundException('Пользователь');
   }
+  public static Account() {
+    return new NotFoundException('Аккаунт');
+  }
   public static Product() {
     return new NotFoundException('Товар');
   }

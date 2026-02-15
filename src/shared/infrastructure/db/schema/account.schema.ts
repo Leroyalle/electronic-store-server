@@ -3,11 +3,15 @@ import { boolean, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 
 import { ProviderName, providersMap } from '@/modules/auth/constants/providers-map.constant';
 
+import { refreshTokenSchema } from './refresh-token.schema';
 import { pgTimestamp } from './timestamp';
-import { roleEnum, userSchema } from './user.schema';
+import { userSchema } from './user.schema';
+
+export const roles = ['user', 'admin'] as const;
+export const roleEnum = pgEnum('role', roles);
 
 const providersArray = Object.keys(providersMap) as [ProviderName, ...ProviderName[]];
-const providers = pgEnum('provider', providersArray);
+const providers = pgEnum('provider', [...providersArray, 'credentials']);
 const type = pgEnum('type', ['oauth', 'credentials']);
 
 export const oauthAccountSchema = pgTable('oauthAccounts', {
@@ -22,9 +26,7 @@ export const credentialsAccountSchema = pgTable('credentialsAccounts', {
   accountId: uuid()
     .primaryKey()
     .references(() => accountSchema.id, { onDelete: 'cascade' }),
-  email: text().notNull().unique(),
   password: text().notNull(),
-  role: roleEnum().notNull(),
   isVerified: boolean().notNull().default(false),
   ...pgTimestamp,
 });
@@ -33,17 +35,30 @@ export const accountSchema = pgTable('accounts', {
   id: uuid().defaultRandom().primaryKey(),
   provider: providers().notNull(),
   type: type().notNull(),
-  userId: uuid().references(() => userSchema.id, { onDelete: 'cascade' }),
+  role: roleEnum().notNull(),
+  userId: uuid()
+    .notNull()
+    .references(() => userSchema.id, { onDelete: 'cascade' }),
   ...pgTimestamp,
 });
 
-export const accountRelations = relations(accountSchema, ({ one }) => ({
+export const accountRelations = relations(accountSchema, ({ one, many }) => ({
   user: one(userSchema, {
     fields: [accountSchema.userId],
     references: [userSchema.id],
   }),
+  refreshTokens: many(refreshTokenSchema),
   oauthAccount: one(oauthAccountSchema),
   credentialsAccount: one(credentialsAccountSchema),
 }));
 
-export type AccountSchema = InferSelectModel<typeof accountSchema>;
+export type Account = InferSelectModel<typeof accountSchema>;
+export type AccountWithRelations = Account & {
+  oauthAccount: InferSelectModel<typeof oauthAccountSchema> | null;
+  credentialsAccount: InferSelectModel<typeof credentialsAccountSchema> | null;
+};
+
+export type OauthAccount = InferSelectModel<typeof oauthAccountSchema>;
+export type CredentialsAccount = InferSelectModel<typeof credentialsAccountSchema>;
+
+export type RoleEnum = (typeof roles)[number];

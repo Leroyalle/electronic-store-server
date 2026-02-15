@@ -1,13 +1,13 @@
 import { zValidator } from '@hono/zod-validator';
 import { Hono, MiddlewareHandler } from 'hono';
-import { setCookie } from 'hono/cookie';
+import { getCookie, setCookie } from 'hono/cookie';
 
 import { AuthVars, RefreshAuthVars } from '@/shared/types/auth-variables.type';
 
 import { AuthCommands } from './auth.commands';
-import { providersMap } from './constants/providers-map.constant';
 import { loginZodSchema } from './schemas/login.schema';
-import { oauthProvider } from './schemas/oauth-provider.schema';
+import { oauthCallbackZodSchema } from './schemas/oauth-callback.schema';
+import { oauthProviderZodSchema } from './schemas/oauth-provider.schema';
 import { registerZodSchema } from './schemas/register.schema';
 import {
   verifyEmailCodeZodSchema,
@@ -59,7 +59,7 @@ export function createAuthRouter(deps: Deps): Hono {
     return c.json({ message: 'Авторизация прошла успешно!', accessToken: result.accessToken }, 201);
   });
 
-  authRouter.get('/login/:provider', zValidator('param', oauthProvider), c => {
+  authRouter.get('/login/:provider', zValidator('param', oauthProviderZodSchema), c => {
     const params = c.req.valid('param');
     const result = deps.commands.oauthLogin(params.provider);
     setCookie(c, 'oauth_state', result.state, {
@@ -73,13 +73,29 @@ export function createAuthRouter(deps: Deps): Hono {
   });
 
   authRouter.post(
+    '/login/:provider/callback',
+    zValidator('param', oauthProviderZodSchema),
+    zValidator('query', oauthCallbackZodSchema),
+    async c => {
+      const params = c.req.valid('param');
+      const queryParams = c.req.valid('query');
+      const storedState = getCookie(c, 'oauth_state') ?? '';
+      const result = await deps.commands.oauthLoginCallback(params.provider, {
+        ...queryParams,
+        storedState,
+      });
+      c.json(201);
+    },
+  );
+
+  authRouter.post(
     '/reset-password',
     deps.accessGuard,
     zValidator('json', loginZodSchema),
     async c => {
       const body = c.req.valid('json');
-      const userId = c.get('userId');
-      await deps.commands.resetPassword(userId, body.password);
+      const user = c.get('user');
+      await deps.commands.resetPassword(user, body.password);
       return c.json(
         {
           message: 'Письмо с кодом подтверждения отправлено на ваш email',
@@ -95,8 +111,8 @@ export function createAuthRouter(deps: Deps): Hono {
     zValidator('json', verifyPasswordCodeZodSchema),
     async c => {
       const body = c.req.valid('json');
-      const userId = c.get('userId');
-      await deps.commands.verifyPasswordCode(userId, body.code, body.newPassword);
+      const accountId = c.get('accountId');
+      await deps.commands.verifyPasswordCode(accountId, body.code, body.newPassword);
       return c.json(
         {
           message: 'Пароль успешно изменен!',
@@ -107,9 +123,9 @@ export function createAuthRouter(deps: Deps): Hono {
   );
 
   authRouter.post('/refresh', deps.refreshGuard, async c => {
-    const userId = c.get('userId');
+    const accountId = c.get('accountId');
     const jti = c.get('jti');
-    const result = await deps.commands.refresh(userId, jti);
+    const result = await deps.commands.refresh(accountId, jti);
     setCookie(c, 'refreshToken', result.refreshToken.token, {
       httpOnly: true,
       // secure: true,
