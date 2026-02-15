@@ -50,8 +50,6 @@ export class AuthCommands {
   constructor(private readonly deps: Deps) {}
 
   public async resetPassword(user: User, accountId: string, newPassword: string) {
-    // const findUser = await this.deps.userQueries.findById(userId);
-    // if (!findUser) throw NotFoundException.User();
     const account = await this.deps.accountQueries.findById(accountId);
 
     if (!account) throw NotFoundException.Account();

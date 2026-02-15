@@ -84,7 +84,16 @@ export function createAuthRouter(deps: Deps): Hono {
         ...queryParams,
         storedState,
       });
-      c.json(201);
+
+      setCookie(c, 'refreshToken', result.refreshToken.token, {
+        httpOnly: true,
+        // secure: true,
+        sameSite: 'strict',
+        path: '/',
+        expires: result.refreshToken.expAt,
+      });
+
+      c.json({ accessToken: result.accessToken }, 201);
     },
   );
 
@@ -95,7 +104,8 @@ export function createAuthRouter(deps: Deps): Hono {
     async c => {
       const body = c.req.valid('json');
       const user = c.get('user');
-      await deps.commands.resetPassword(user, body.password);
+      const accountId = c.get('accountId');
+      await deps.commands.resetPassword(user, accountId, body.password);
       return c.json(
         {
           message: 'Письмо с кодом подтверждения отправлено на ваш email',
@@ -111,8 +121,10 @@ export function createAuthRouter(deps: Deps): Hono {
     zValidator('json', verifyPasswordCodeZodSchema),
     async c => {
       const body = c.req.valid('json');
+      const user = c.get('user');
       const accountId = c.get('accountId');
-      await deps.commands.verifyPasswordCode(accountId, body.code, body.newPassword);
+
+      await deps.commands.verifyPasswordCode(user, accountId, body.code, body.newPassword);
       return c.json(
         {
           message: 'Пароль успешно изменен!',
